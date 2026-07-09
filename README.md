@@ -20,7 +20,7 @@ Since you are on Windows, open a **PowerShell** terminal and run the following c
 
 1. **Navigate to the project directory:**
    ```powershell
-   cd C:\Users\kuldeep\.gemini\antigravity\scratch\security_dashboard
+   cd " folder address"/" folder name"
    ```
 
 2. **Create a virtual environment:**
