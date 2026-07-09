@@ -1,0 +1,252 @@
+{% extends 'base.html' %}
+
+{% block page_title %}Security Overview{% endblock %}
+{% block page_subtitle %}Good Morning, {{ current_user.username }}!{% endblock %}
+
+{% block content %}
+<!-- Top Row Summary Cards -->
+<div class="cyber-summary-grid">
+    <!-- Card 1: Total Alerts -->
+    <div class="cyber-summary-card alert-card">
+        <div class="cyber-summary-details">
+            <div class="cyber-summary-label">Total Alerts</div>
+            <div class="cyber-summary-value">{{ alerts_count }}</div>
+            <div class="cyber-summary-subtext">High: <span>{{ high_alerts }}</span> | Medium: <span>{{ med_alerts }}</span></div>
+        </div>
+        <div class="cyber-summary-chart" style="color: #ef4444; font-size: 1.75rem;">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+    </div>
+
+    <!-- Card 2: Scans Today -->
+    <div class="cyber-summary-card scan-card">
+        <div class="cyber-summary-details">
+            <div class="cyber-summary-label">Scans Today</div>
+            <div class="cyber-summary-value">{{ scans_today }}</div>
+            <div class="cyber-summary-subtext">Active monitoring enabled</div>
+        </div>
+        <div class="cyber-summary-chart">
+            <svg class="cyber-circle-chart" width="50" height="50" viewBox="0 0 36 36">
+                <path class="circle-bg" stroke="rgba(255,255,255,0.05)" stroke-width="3" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                <path class="circle" stroke="var(--cyber-primary)" stroke-width="3" stroke-dasharray="75, 100" stroke-linecap="round" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+            </svg>
+        </div>
+    </div>
+
+    <!-- Card 3: Safe URLs -->
+    <div class="cyber-summary-card url-card">
+        <div class="cyber-summary-details">
+            <div class="cyber-summary-label">Safe URLs</div>
+            <div class="cyber-summary-value">{{ safe_url_pct }}%</div>
+            <div class="cyber-summary-subtext">Verified connections</div>
+        </div>
+        <div class="cyber-summary-chart">
+            <!-- Mini SVG Sparkline -->
+            <svg width="60" height="30" viewBox="0 0 60 30" style="display: block; overflow: visible;">
+                <path d="M0,25 Q10,5 20,20 T40,10 T60,5" fill="none" stroke="var(--cyber-secondary)" stroke-width="2.5" stroke-linecap="round" filter="drop-shadow(0 0 4px rgba(0, 255, 102, 0.4))" />
+            </svg>
+        </div>
+    </div>
+
+    <!-- Card 4: Threats Blocked -->
+    <div class="cyber-summary-card threat-card">
+        <div class="cyber-summary-details">
+            <div class="cyber-summary-label">Threats Blocked</div>
+            <div class="cyber-summary-value">{{ threats_blocked }}</div>
+            <div class="cyber-summary-subtext">Automated mitigation</div>
+        </div>
+        <div class="cyber-summary-chart" style="color: #eab308; font-size: 1.75rem; filter: drop-shadow(0 0 6px rgba(234,179,8,0.4));">
+            <i class="fa-solid fa-shield-halved"></i>
+        </div>
+    </div>
+</div>
+
+<!-- Main Panels Row -->
+<div class="cyber-dashboard-grid">
+    <!-- Left Column: Scan Activity & Active Alerts -->
+    <div class="d-flex flex-column gap-4">
+        <!-- Scan Activity Panel -->
+        <div class="cyber-panel">
+            <div class="cyber-panel-header">
+                <h2 class="cyber-panel-title">Recent Scan Activity</h2>
+                <div class="cyber-panel-more"><i class="fa-solid fa-ellipsis"></i></div>
+            </div>
+            <div class="cyber-table-wrapper">
+                <table class="cyber-table">
+                    <thead>
+                        <tr>
+                            <th>Target / Scan</th>
+                            <th>Status</th>
+                            <th>Time</th>
+                            <th>Reference ID</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for scan in recent_scans %}
+                            {% set label = "" %}
+                            {% set status_class = "safe" %}
+                            {% set status_text = "Safe" %}
+                            
+                            {% if scan.scan_type == 'password' %}
+                                {% set label = "Password Audit" %}
+                                {% if "Weak" in scan.result or "weak" in scan.result.lower() %}
+                                    {% set status_class = "weak" %}
+                                    {% set status_text = "Weak" %}
+                                {% endif %}
+                            {% elif scan.scan_type == 'url' %}
+                                {% if "(" in scan.result %}
+                                    {% set parts = scan.result.split('(') %}
+                                    {% set label = parts[1].replace(')', '') %}
+                                {% else %}
+                                    {% set label = "URL Scan" %}
+                                {% endif %}
+                                {% if "Unsafe" in scan.result or "unsafe" in scan.result.lower() or "unsafe" in scan.result %}
+                                    {% set status_class = "critical" %}
+                                    {% set status_text = "Phishing" %}
+                                {% endif %}
+                            {% elif scan.scan_type == 'port' %}
+                                {% if "Target:" in scan.result %}
+                                    {% set parts = scan.result.split(',') %}
+                                    {% set label = parts[0].replace('Target:', '').strip() %}
+                                {% else %}
+                                    {% set label = "Port Scan" %}
+                                {% endif %}
+                                {% if "Open: []" in scan.result %}
+                                    {% set status_class = "safe" %}
+                                    {% set status_text = "Safe" %}
+                                {% else %}
+                                    {% set status_class = "critical" %}
+                                    {% set status_text = "Critical" %}
+                                {% endif %}
+                            {% endif %}
+                            <tr>
+                                <td>{{ label | truncate(25) }}</td>
+                                <td><span class="cyber-status-pill {{ status_class }}">{{ status_text }}</span></td>
+                                <td>{{ scan.timestamp.strftime('%H:%M') }}</td>
+                                <td>SD#{{ 400 + scan.id }}</td>
+                            </tr>
+                        {% else %}
+                            <!-- Mock lines matching the mockup image if DB is brand new -->
+                            <tr>
+                                <td>veracode.com</td>
+                                <td><span class="cyber-status-pill safe">Safe</span></td>
+                                <td>14:02</td>
+                                <td>SD#421</td>
+                            </tr>
+                            <tr>
+                                <td>Password: admin_hash</td>
+                                <td><span class="cyber-status-pill weak">Weak</span></td>
+                                <td>13:58</td>
+                                <td>SD#420</td>
+                            </tr>
+                            <tr>
+                                <td>URL: phishcheck.io</td>
+                                <td><span class="cyber-status-pill safe">Safe</span></td>
+                                <td>13:45</td>
+                                <td>SD#419</td>
+                            </tr>
+                            <tr>
+                                <td>Port: Target: 192.168.1.10</td>
+                                <td><span class="cyber-status-pill critical">Critical</span></td>
+                                <td>13:30</td>
+                                <td>SD#418</td>
+                            </tr>
+                            <tr>
+                                <td>URL: site.com</td>
+                                <td><span class="cyber-status-pill safe">Safe</span></td>
+                                <td>13:15</td>
+                                <td>SD#417</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Active Alerts Panel -->
+        <div class="cyber-panel">
+            <div class="cyber-panel-header">
+                <h2 class="cyber-panel-title">Active Alerts</h2>
+                <div class="cyber-panel-more"><i class="fa-solid fa-ellipsis"></i></div>
+            </div>
+            <div class="cyber-alerts-list">
+                {% for alert in recent_alerts %}
+                    <a href="{{ url_for('alerts') }}" class="cyber-alert-item">
+                        <div class="cyber-alert-item-left">
+                            <div class="cyber-alert-badge">1</div>
+                            <div>
+                                <h4 class="cyber-alert-name">{{ alert.message }}</h4>
+                                <p class="cyber-alert-details">Severity: {{ alert.risk | upper }} | Verified: {{ alert.timestamp.strftime('%H:%M') }}</p>
+                            </div>
+                        </div>
+                        <div class="cyber-alert-arrow"><i class="fa-solid fa-chevron-right"></i></div>
+                    </a>
+                {% else %}
+                    <!-- Mock list matching the mockup image if database is empty -->
+                    <a href="{{ url_for('alerts') }}" class="cyber-alert-item">
+                        <div class="cyber-alert-item-left">
+                            <div class="cyber-alert-badge">1</div>
+                            <div>
+                                <h4 class="cyber-alert-name">Brute-force</h4>
+                                <p class="cyber-alert-details">ssh-service | Severity: HIGH</p>
+                            </div>
+                        </div>
+                        <div class="cyber-alert-arrow"><i class="fa-solid fa-chevron-right"></i></div>
+                    </a>
+                    <a href="{{ url_for('alerts') }}" class="cyber-alert-item">
+                        <div class="cyber-alert-item-left">
+                            <div class="cyber-alert-badge">1</div>
+                            <div>
+                                <h4 class="cyber-alert-name">cryptominer-activity</h4>
+                                <p class="cyber-alert-details">cryptominer-activity | Severity: HIGH</p>
+                            </div>
+                        </div>
+                        <div class="cyber-alert-arrow"><i class="fa-solid fa-chevron-right"></i></div>
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Launch Tools -->
+    <div class="cyber-panel">
+        <div class="cyber-panel-header">
+            <h2 class="cyber-panel-title">Security Modules</h2>
+            <div class="cyber-panel-more"><i class="fa-solid fa-ellipsis"></i></div>
+        </div>
+        <div class="cyber-launchers-grid">
+            <!-- Module 1: Password Analyzer -->
+            <a href="{{ url_for('password_analyzer') }}" class="cyber-launcher-card password-launcher">
+                <div class="cyber-launcher-icon"><i class="fa-solid fa-key"></i></div>
+                <h3 class="cyber-launcher-title">Password Analyzer</h3>
+                <p class="cyber-launcher-desc">Evaluate strength metrics and detect weak patterns.</p>
+                <div class="cyber-launcher-link">Launch <i class="fa-solid fa-arrow-right"></i></div>
+            </a>
+
+            <!-- Module 2: URL Checker -->
+            <a href="{{ url_for('url_checker') }}" class="cyber-launcher-card url-launcher">
+                <div class="cyber-launcher-icon"><i class="fa-solid fa-link"></i></div>
+                <h3 class="cyber-launcher-title">URL Checker</h3>
+                <p class="cyber-launcher-desc">Scan suspicious domains for phishing signatures.</p>
+                <div class="cyber-launcher-link">Launch <i class="fa-solid fa-arrow-right"></i></div>
+            </a>
+
+            <!-- Module 3: Port Scanner -->
+            <a href="{{ url_for('port_scanner') }}" class="cyber-launcher-card port-launcher">
+                <div class="cyber-launcher-icon"><i class="fa-solid fa-network-wired"></i></div>
+                <h3 class="cyber-launcher-title">Port Scanner</h3>
+                <p class="cyber-launcher-desc">Verify ports and discover listening network nodes.</p>
+                <div class="cyber-launcher-link">Launch <i class="fa-solid fa-arrow-right"></i></div>
+            </a>
+
+            <!-- Module 4: File Encryption -->
+            <a href="{{ url_for('file_encryption') }}" class="cyber-launcher-card encryption-launcher">
+                <div class="cyber-launcher-icon"><i class="fa-solid fa-file-shield"></i></div>
+                <h3 class="cyber-launcher-title">File Encryption</h3>
+                <p class="cyber-launcher-desc">Secure local documents using Fernet AES-256 keys.</p>
+                <div class="cyber-launcher-link">Launch <i class="fa-solid fa-arrow-right"></i></div>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

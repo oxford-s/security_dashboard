@@ -1,0 +1,27 @@
+# Virtual Environment
+venv/
+ENV/
+env/
+.venv/
+
+# Python Cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Databases
+database.db
+*.db
+*.sqlite
+
+# Secret Keys / Environment Variables
+.env
+client_secret.json
+
+# IDE Settings
+.vscode/
+.idea/
+
+# Application Reports
+project_files_detail_report.pdf
+*.pdf

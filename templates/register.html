@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+
+{% block index_content %}
+<div class="auth-body">
+    <div class="auth-container">
+        <!-- Left Branding Panel -->
+        <div class="auth-left">
+            <div class="auth-brand-logo-container">
+                <i class="fa-solid fa-shield-halved auth-brand-logo"></i>
+                <h1 class="auth-brand-title">SecDash</h1>
+                <p class="auth-brand-slogan">Protect. Monitor. Respond.</p>
+            </div>
+            <div class="auth-left-footer">
+                <div class="auth-feature-badge">
+                    <i class="fa-solid fa-circle-check"></i> 256-bit Encryption
+                </div>
+                <div class="auth-feature-badge">
+                    <i class="fa-solid fa-circle-check"></i> Zero Data Logs
+                </div>
+                <div class="auth-feature-badge">
+                    <i class="fa-solid fa-circle-check"></i> SOC 2 Certified
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Form Panel -->
+        <div class="auth-right">
+            <div class="auth-top-nav">
+                Already have an account? <a href="{{ url_for('login') }}">Log in &rarr;</a>
+            </div>
+            
+            <div class="auth-header">
+                <h2 class="auth-title">Create your account</h2>
+                <p class="auth-subtitle">Set up your SecDash profile</p>
+            </div>
+
+            <form method="POST" action="">
+                <!-- Username Input -->
+                <div class="auth-input-group">
+                    <input type="text" id="username" name="username" placeholder="Enter your username" required autocomplete="username">
+                    <i class="fa-solid fa-user auth-input-icon"></i>
+                </div>
+
+                <!-- Password Input -->
+                <div class="auth-input-group">
+                    <input type="password" id="password" name="password" placeholder="Enter your password" required autocomplete="new-password">
+                    <i class="fa-solid fa-lock auth-input-icon"></i>
+                    <i class="fa-solid fa-eye auth-password-toggle" id="togglePassword"></i>
+                </div>
+
+                <!-- Options -->
+                <div class="auth-options">
+                    <label class="auth-checkbox-label">
+                        <input type="checkbox" name="terms" required> I agree to the <a href="#" class="auth-link">Terms of Service</a> and <a href="#" class="auth-link">Privacy Policy</a>
+                    </label>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="auth-btn-submit">
+                    Create Account &rarr;
+                </button>
+
+                <!-- Divider -->
+                <div class="auth-divider">
+                    <span>or continue with</span>
+                </div>
+
+                <!-- Socials -->
+                <div class="auth-social-row">
+                    <a href="{{ url_for('oauth_login', provider='google') }}" class="auth-social-btn text-decoration-none">
+                        <i class="fa-brands fa-google" style="color: #ea4335;"></i> Google
+                    </a>
+                    <a href="{{ url_for('oauth_login', provider='github') }}" class="auth-social-btn text-decoration-none">
+                        <i class="fa-brands fa-github"></i> GitHub
+                    </a>
+                </div>
+
+                <!-- Footer -->
+                <div class="auth-footer">
+                    <i class="fa-solid fa-circle-check"></i> Protected by SecDash security protocols
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    const togglePassword = document.querySelector('#togglePassword');
+    const password = document.querySelector('#password');
+    
+    togglePassword.addEventListener('click', function () {
+        // Toggle the type attribute
+        const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+        password.setAttribute('type', type);
+        
+        // Toggle the eye icon
+        this.classList.toggle('fa-eye');
+        this.classList.toggle('fa-eye-slash');
+    });
+</script>
+{% endblock %}

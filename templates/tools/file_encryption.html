@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow mt-4">
+            <div class="card-header bg-secondary text-white">
+                <h4 class="mb-0"><i class="fa-solid fa-file-shield"></i> File Encryption</h4>
+            </div>
+            <div class="card-body">
+                <ul class="nav nav-tabs mb-4" id="myTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="encrypt-tab" data-bs-toggle="tab" data-bs-target="#encrypt" type="button" role="tab">Encrypt File</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="decrypt-tab" data-bs-toggle="tab" data-bs-target="#decrypt" type="button" role="tab">Decrypt File</button>
+                    </li>
+                </ul>
+                
+                <div class="tab-content" id="myTabContent">
+                    <div class="tab-pane fade show active" id="encrypt" role="tabpanel">
+                        <form method="POST" action="" enctype="multipart/form-data">
+                            <input type="hidden" name="action" value="encrypt">
+                            <div class="mb-3">
+                                <label for="file_enc" class="form-label">Select File to Encrypt</label>
+                                <input class="form-control" type="file" id="file_enc" name="file" required>
+                            </div>
+                            <button type="submit" class="btn btn-secondary">Encrypt</button>
+                        </form>
+
+                        {% if encrypted %}
+                        <div class="mt-4 p-3 border rounded border-success bg-light">
+                            <h5 class="text-success"><i class="fa-solid fa-check"></i> File Encrypted Successfully!</h5>
+                            <p><strong>IMPORTANT:</strong> Save this decryption key securely. You will not be able to decrypt the file without it.</p>
+                            <div class="input-group mb-3">
+                                <input type="text" class="form-control" value="{{ key }}" id="decryptionKey" readonly>
+                                <button class="btn btn-outline-secondary" type="button" onclick="copyKey()">Copy Key</button>
+                            </div>
+                            
+                            <form method="POST" action="{{ url_for('download_file') }}">
+                                <input type="hidden" name="data" value="{{ data }}">
+                                <input type="hidden" name="filename" value="{{ filename }}">
+                                <button type="submit" class="btn btn-success"><i class="fa-solid fa-download"></i> Download Encrypted File</button>
+                            </form>
+                        </div>
+                        <script>
+                            function copyKey() {
+                                var copyText = document.getElementById("decryptionKey");
+                                copyText.select();
+                                document.execCommand("copy");
+                                alert("Copied the key: " + copyText.value);
+                            }
+                        </script>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="tab-pane fade" id="decrypt" role="tabpanel">
+                        <form method="POST" action="" enctype="multipart/form-data">
+                            <input type="hidden" name="action" value="decrypt">
+                            <div class="mb-3">
+                                <label for="file_dec" class="form-label">Select Encrypted File</label>
+                                <input class="form-control" type="file" id="file_dec" name="file" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="key" class="form-label">Decryption Key</label>
+                                <input type="text" class="form-control" id="key" name="key" placeholder="Enter your key here" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Decrypt & Download</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

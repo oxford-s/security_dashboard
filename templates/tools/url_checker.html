@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow mt-4">
+            <div class="card-header bg-info text-white">
+                <h4 class="mb-0"><i class="fa-solid fa-link"></i> URL Checker</h4>
+            </div>
+            <div class="card-body">
+                <p>Check if a URL uses secure protocols and scan for suspicious patterns.</p>
+                <form method="POST" action="">
+                    <div class="input-group mb-3">
+                        <input type="text" class="form-control" name="url" placeholder="e.g., example.com or https://secure-login.com" required>
+                        <button class="btn btn-info text-white" type="submit">Check URL</button>
+                    </div>
+                </form>
+
+                {% if result %}
+                <div class="mt-4 p-4 border rounded bg-light">
+                    <h5>Status: 
+                        <span class="badge bg-{{ 'danger' if result.is_unsafe else 'success' }}">
+                            {{ result.status }}
+                        </span>
+                    </h5>
+                    
+                    {% if result.issues %}
+                    <h6 class="mt-3">Warnings:</h6>
+                    <ul class="text-danger">
+                        {% for issue in result.issues %}
+                        <li>{{ issue }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p class="text-success mt-3"><i class="fa-solid fa-shield-check"></i> No immediate threats detected in URL pattern.</p>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

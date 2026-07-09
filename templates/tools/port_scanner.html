@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow mt-4">
+            <div class="card-header bg-warning text-dark">
+                <h4 class="mb-0"><i class="fa-solid fa-network-wired"></i> Port Scanner</h4>
+            </div>
+            <div class="card-body">
+                <p>Scan a host for commonly open and potentially risky ports (e.g., 21, 22, 80).</p>
+                <form method="POST" action="">
+                    <div class="input-group mb-3">
+                        <input type="text" class="form-control" name="target" placeholder="Enter IP or hostname (e.g., localhost or 127.0.0.1)" required>
+                        <button class="btn btn-warning" type="submit">Scan Ports</button>
+                    </div>
+                </form>
+
+                {% if result %}
+                <div class="mt-4 p-4 border rounded bg-light">
+                    {% if result.error %}
+                        <div class="alert alert-danger">{{ result.error }}</div>
+                    {% else %}
+                        <h5>Scan Results for {{ result.target }}</h5>
+                        <p><strong>Open Ports:</strong> 
+                            {% if result.open_ports %}
+                                {{ result.open_ports | join(', ') }}
+                            {% else %}
+                                None found in the standard scan list.
+                            {% endif %}
+                        </p>
+                        
+                        {% if result.risky_ports %}
+                        <div class="alert alert-danger mt-3">
+                            <strong><i class="fa-solid fa-triangle-exclamation"></i> Risky Ports Open:</strong> {{ result.risky_ports | join(', ') }}
+                            <br><small>Ports like FTP (21) or SSH (22) can be risky if exposed to the internet unnecessarily.</small>
+                        </div>
+                        {% elif result.open_ports %}
+                        <div class="alert alert-info mt-3">
+                            <i class="fa-solid fa-info-circle"></i> Open ports found, but none match common risky profiles.
+                        </div>
+                        {% endif %}
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
